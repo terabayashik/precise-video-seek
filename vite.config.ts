@@ -2,9 +2,9 @@ import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vite";
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
-  base: process.env.GITHUB_ACTIONS ? "/precise-video-seek/" : "/",
+  base: mode === "production" ? "/precise-video-seek/" : "/",
   optimizeDeps: {
     exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"],
   },
@@ -14,4 +14,4 @@ export default defineConfig({
       "Cross-Origin-Opener-Policy": "same-origin",
     },
   },
-});
+}));
