@@ -1,69 +1,84 @@
-# React + TypeScript + Vite
+# フレーム単位コマ送りプレイヤー
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+動画ファイルをフレーム単位で精密に制御できるWebアプリケーションです。VideoDecoder APIとFFmpeg.wasmの2つの実装を並列で提供し、比較検証が可能です。
 
-Currently, two official plugins are available:
+## 機能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- フレーム単位での前進・後退（±1フレーム、±10フレーム）
+- 可変速再生（0.25x～2x）
+- 60fps更新による滑らかな再生
+- フレーム番号と時刻の同時表示
+- 動画メタデータの表示（解像度、フレームレート、ビットレート等）
 
-## Expanding the ESLint configuration
+## 技術スタック
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- React 19 + TypeScript
+- Vite（ビルドツール）
+- Mantine v8（UIライブラリ）
+- Biome（リンター・フォーマッター）
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## セットアップ
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### 必要要件
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js 24
+- pnpm 10
+
+### インストール
+
+```bash
+pnpm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 開発サーバー起動
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm dev
 ```
+
+### ビルド
+
+```bash
+pnpm build
+```
+
+### コード品質チェック
+
+```bash
+pnpm check  # Biomeによるリント・フォーマット
+```
+
+## プロジェクト構成
+
+```
+src/
+├── components/
+│   ├── VideoDecoderPlayer/    # VideoDecoder API実装
+│   │   └── SimpleVideoPlayer.tsx
+│   ├── FFmpegPlayer/          # FFmpeg.wasm実装
+│   │   └── SimpleFFmpegPlayer.tsx
+│   └── VideoFilePicker/       # ファイル選択UI
+│       └── VideoFilePicker.tsx
+├── App.tsx                    # メインコンポーネント
+└── main.tsx                   # エントリーポイント
+```
+
+## 実装の違い
+
+### VideoDecoder API版
+- ブラウザネイティブのHTML5 video要素を使用
+- 低レイテンシーで軽量な実装
+
+### FFmpeg.wasm版
+- WebAssemblyコンパイル版FFmpegを使用
+- より高度な動画処理が可能
+
+## ブラウザ要件
+
+- Chrome/Edge 94以上
+- Firefox 100以上
+- Safari 15.4以上
+
+## ライセンス
+
+MIT
