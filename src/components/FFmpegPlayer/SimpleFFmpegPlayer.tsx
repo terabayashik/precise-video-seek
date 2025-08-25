@@ -11,13 +11,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 interface SimpleFFmpegPlayerProps {
   videoFile: File;
+  frameRate?: number;
 }
 
-export const SimpleFFmpegPlayer = ({ videoFile }: SimpleFFmpegPlayerProps) => {
+export const SimpleFFmpegPlayer = ({ videoFile, frameRate = 30 }: SimpleFFmpegPlayerProps) => {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [frameRate] = useState(30); // Default to 30fps
+  // Use the detected frame rate from props
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackRate, setPlaybackRate] = useState("1");
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -61,7 +62,7 @@ export const SimpleFFmpegPlayer = ({ videoFile }: SimpleFFmpegPlayerProps) => {
     const video = videoRef.current;
     if (!video) return;
 
-    const currentFrame = Math.floor(video.currentTime * frameRate);
+    const currentFrame = Math.round(video.currentTime * frameRate);
 
     // Only update if frame actually changed
     if (currentFrame !== prevFrameRef.current) {
@@ -100,7 +101,7 @@ export const SimpleFFmpegPlayer = ({ videoFile }: SimpleFFmpegPlayerProps) => {
     const handleSeeked = () => {
       setCurrentTime(video.currentTime);
       captureFrame();
-      prevFrameRef.current = Math.floor(video.currentTime * frameRate);
+      prevFrameRef.current = Math.round(video.currentTime * frameRate);
     };
 
     video.addEventListener("timeupdate", handleTimeUpdate);
@@ -181,8 +182,13 @@ export const SimpleFFmpegPlayer = ({ videoFile }: SimpleFFmpegPlayerProps) => {
   const seekByFrames = (frames: number) => {
     if (!videoRef.current) return;
     videoRef.current.pause();
+    // Calculate based on frame numbers to avoid floating point errors
+    const currentFrame = Math.round(videoRef.current.currentTime * frameRate);
+    const targetFrame = Math.max(0, Math.min(Math.round(duration * frameRate), currentFrame + frames));
+    // Add small offset to ensure we land in the correct frame
+    // For 29.97fps, frame duration is ~0.0333667 seconds
     const frameDuration = 1 / frameRate;
-    const newTime = Math.max(0, Math.min(duration, videoRef.current.currentTime + frames * frameDuration));
+    const newTime = (targetFrame / frameRate) + (frameDuration * 0.5);
     videoRef.current.currentTime = newTime;
   };
 
@@ -312,7 +318,7 @@ export const SimpleFFmpegPlayer = ({ videoFile }: SimpleFFmpegPlayerProps) => {
               現在時刻: {currentTime.toFixed(3)}秒 / {duration.toFixed(3)}秒
             </Text>
             <Text size="xs" c="dimmed" ta="center">
-              フレーム: {Math.floor(currentTime * frameRate)} / {Math.floor(duration * frameRate)}
+              フレーム: {Math.round(currentTime * frameRate)} / {Math.round(duration * frameRate)}
             </Text>
           </>
         )}
